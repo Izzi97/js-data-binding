@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JS Get Set</title>
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <input id="input" type="text">
+  <button id="confirm">Confirm</button>
+  <textarea id="output" cols="30" rows="10" readonly></textarea>
+  <button id="log">Log History</button>
+  <textarea id="history" cols="30" rows="10" readonly></textarea>
+  <script>
+    window.model = {
+      history: {},
+      subscribers: {}
+    }
+
+    const input = document.getElementById('input')
+    const confirmButton = document.getElementById('confirm')
+    const output = document.getElementById('output')
+    const logButton = document.getElementById('log')
+    const histLog = document.getElementById('history')
+
+    confirmButton.onclick = _ => model.message = input.value
+    bind(model, 'message', output, 'value')
+    logButton.onclick = logHistory
+
+    function bind(fromObj, fromProp, toObj, toProp) {
+      if (!model.subscribers[fromProp])
+        model.subscribers[fromProp] = []
+
+      model.subscribers[fromProp].push([toObj, toProp])
+
+      Object.defineProperty(fromObj, fromProp, {
+        set: function(val) {
+          if (!model.history[fromProp])
+            model.history[fromProp] = []
+
+          model.history[fromProp].push(val)
+          
+          model.subscribers[fromProp].forEach(([obj, prop]) => {
+            obj[prop] = val
+          })
+        }
+      })
+    }
+
+    function logHistory() {
+      Object
+        .entries(model.history)
+        .forEach(([prop, hist]) => {
+          histLog.value += `${prop}: [${hist.join(', ')}]\n`
+        })
+    }
+  </script>
+</body>
+</html>
