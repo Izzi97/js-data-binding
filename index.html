@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JS Get Set</title>
+  <title>JS Data Binding</title>
+  <script src="/data-bind.js" type="module"></script>
   <style>
     html, body {
       width: 100%;
@@ -16,50 +17,48 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 1em;
+    }
+
+    h2 {
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <input id="input" type="text">
-  <button id="confirm">Confirm</button>
-  <textarea id="output" cols="30" rows="10" readonly></textarea>
+
+  <h2>Input</h2>
+  <div>
+    <input id="input" type="text">
+    <button id="confirm">Confirm</button>
+  </div>
+
+  <div>
+    <h2>Output</h2>
+    <textarea id="output-1" cols="30" rows="10" readonly></textarea>
+    <textarea id="output-2" cols="30" rows="10" readonly></textarea>
+  </div>
+
+  <h2>Log</h2>
   <button id="log">Log History</button>
   <textarea id="history" cols="30" rows="10" readonly></textarea>
-  <script>
-    window.model = {
-      history: {},
-      subscribers: {}
-    }
+  
+  <script type="module">
+    import { Model } from './data-bind.js'
+
+    const model = new Model('message-model')
 
     const input = document.getElementById('input')
     const confirmButton = document.getElementById('confirm')
-    const output = document.getElementById('output')
-    const logButton = document.getElementById('log')
+    const output1 = document.getElementById('output-1')
+    const output2 = document.getElementById('output-2')
     const histLog = document.getElementById('history')
+    const logButton = document.getElementById('log')
 
+    model.bind('message', output1, 'value')
+    model.bind('message', output2, 'value')
     confirmButton.onclick = _ => model.message = input.value
-    bind(model, 'message', output, 'value')
     logButton.onclick = logHistory
-
-    function bind(fromObj, fromProp, toObj, toProp) {
-      if (!model.subscribers[fromProp])
-        model.subscribers[fromProp] = []
-
-      model.subscribers[fromProp].push([toObj, toProp])
-
-      Object.defineProperty(fromObj, fromProp, {
-        set: function(val) {
-          if (!model.history[fromProp])
-            model.history[fromProp] = []
-
-          model.history[fromProp].push(val)
-          
-          model.subscribers[fromProp].forEach(([obj, prop]) => {
-            obj[prop] = val
-          })
-        }
-      })
-    }
 
     function logHistory() {
       Object
